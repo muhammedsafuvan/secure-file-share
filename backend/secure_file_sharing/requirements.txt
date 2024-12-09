@@ -1,0 +1,26 @@
+# Django and core dependencies
+Django==5.1.4  # Using your specified version
+djangorestframework==3.15.2  # Using your specified version
+django-cors-headers==4.6.0 # For handling CORS
+django-encrypted-model-fields==0.6.5
+
+# Authentication and Security
+djangorestframework-simplejwt==5.2.2  # For JWT authentication
+bcrypt==4.0.1  # For password hashing
+pyotp==2.8.0  # For TOTP-based MFA
+cryptography==41.0.3  # For AES encryption
+
+# Frontend integrations and static files
+whitenoise==6.5.0  # For serving static files
+
+# Development and Debugging
+django-debug-toolbar==4.1.0  # For debugging in development
+
+# Testing
+pytest-django==4.5.2  # For testing Django applications
+pytest==8.3.4
+pytest-cov==4.1.0  # For test coverage
+factory_boy==3.3.1  # For generating test data
+
+# Deployment
+gunicorn==21.0.0  # WSGI server for deployment (if using production)
