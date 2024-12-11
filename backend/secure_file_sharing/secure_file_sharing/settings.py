@@ -11,6 +11,16 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 """
 
 import os
+from dotenv import load_dotenv
+from pathlib import Path
+from distutils.util import strtobool
+
+# Load the .env file
+env_path = Path(__file__).resolve().parent.parent / '.env'
+load_dotenv(dotenv_path=env_path)
+
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -19,11 +29,6 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'da^_7y)=fk#sr=2y$@ih)^pf*vynk5%t2#q14u@(i#h@&4&6(%'
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
 
 ALLOWED_HOSTS = []
 
@@ -105,11 +110,13 @@ REST_FRAMEWORK = {
 
 # Configure JWT settings
 from datetime import timedelta
+# SECURITY WARNING: keep the secret key used in production secret!
 
+SECRET_KEY = os.getenv('SECRET_KEY')
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
-    'ROTATE_REFRESH_TOKENS': False,
+    'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
     'UPDATE_LAST_LOGIN': False,
     'ALGORITHM': 'HS256',
@@ -134,6 +141,9 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",  # Add your frontend URL here
 ]
 
+CORS_ALLOW_CREDENTIALS = True
+
+
 CORS_ALLOW_METHODS = [
     'DELETE',
     'GET',
@@ -143,15 +153,17 @@ CORS_ALLOW_METHODS = [
     'PUT',
 ]
 
-# # Configure security settings
-# SECURE_SSL_REDIRECT = True
-# SESSION_COOKIE_SECURE = True
-# CSRF_COOKIE_SECURE = True
-# SECURE_HSTS_SECONDS = 31536000  # 1 year
-# SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-# SECURE_HSTS_PRELOAD = True
-# Password validation
-# https://docs.djangoproject.com/en/2.2/ref/settings/#auth-password-validators
+CORS_ALLOW_HEADERS = [
+    "Authorization",
+    "Content-Type",
+    "Accept",
+    "Origin",
+    "User-Agent",
+    "DNT",
+    "Cache-Control",
+    "X-Requested-With",
+    "X-CSRFToken",
+]
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -192,6 +204,21 @@ LOGGING = {
 }
 # Configure custom user model
 AUTH_USER_MODEL = 'users.User'
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = os.getenv('EMAIL_HOST')  # Example: smtp.gmail.com for Gmail
+EMAIL_PORT = os.getenv('EMAIL_PORT')  # Port for TLS. Use 465 for SSL
+# EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS')  # Enable TLS for secure connection
+# EMAIL_USE_SSL = os.getenv('EMAIL_USE_SSL')  # SSL should be False if using TLS
+
+EMAIL_USE_TLS = bool(strtobool(os.getenv("EMAIL_USE_TLS", "True")))
+EMAIL_USE_SSL = bool(strtobool(os.getenv("EMAIL_USE_SSL", "False")))
+
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL')
+
+
 # Internationalization
 # https://docs.djangoproject.com/en/2.2/topics/i18n/
 
@@ -211,4 +238,4 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-FIELD_ENCRYPTION_KEY='LVRmqK3/KHffhEWXUNGGZNj5C+NnC46YGhwRMQetdHA='
+FIELD_ENCRYPTION_KEY= os.getenv('FIELD_ENCRYPTION_KEY')
