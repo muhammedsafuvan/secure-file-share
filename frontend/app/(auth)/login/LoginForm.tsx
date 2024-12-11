@@ -1,26 +1,62 @@
 "use client";
+
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import api from "@/utils/api";
 
 export default function LoginForm() {
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
+    setError(null);
+
     try {
-      const res = await api.post("/auth/login", { username, password });
-      alert("Login successful!");
-    } catch (error) {
-      alert("Login failed.");
+      const res = await api.post("http://localhost:8000/api/users/login/", {
+        email,
+        password,
+      });
+
+      // Save access token
+      localStorage.setItem("accessToken", res.data.access_token);
+
+      // Redirect to dashboard or home page
+      router.push("/dashboard");
+    } catch (err: any) {
+      setError(err.response?.data?.error || "Login failed.");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <input type="text" placeholder="Username" onChange={(e) => setUsername(e.target.value)} />
-      <input type="password" placeholder="Password" onChange={(e) => setPassword(e.target.value)} />
-      <button type="submit">Login</button>
-    </form>
+    <div>
+      <h1>Login</h1>
+      <form onSubmit={handleLogin}>
+        <input
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+        <button type="submit" disabled={loading}>
+          {loading ? "Logging in..." : "Login"}
+        </button>
+      </form>
+      {error && <p style={{ color: "red" }}>{error}</p>}
+    </div>
   );
 }
