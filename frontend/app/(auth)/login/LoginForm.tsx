@@ -23,7 +23,9 @@ export default function LoginForm() {
       });
 
       // Save access token
-      localStorage.setItem("accessToken", res.data.access_token);
+      localStorage.setItem("accessToken", res.data.access);
+      localStorage.setItem("userEmail", email);
+
 
       // Redirect to dashboard or home page
       router.push("/dashboard");

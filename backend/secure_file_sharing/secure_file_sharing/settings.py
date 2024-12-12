@@ -238,4 +238,12 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+MEDIA_URL = '/media/'  # The URL to access files, e.g., http://localhost:8000/media/
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')      # The physical path to store files, e.g., /path/to/project/media
+
+FILE_UPLOAD_HANDLERS = [
+    'django.core.files.uploadhandler.TemporaryFileUploadHandler',  # Default file upload handler
+]
+
 FIELD_ENCRYPTION_KEY= os.getenv('FIELD_ENCRYPTION_KEY')
+

@@ -4,10 +4,17 @@ from .models import File, FileShare
 class FileSerializer(serializers.ModelSerializer):
     class Meta:
         model = File
-        fields = ['id', 'name', 'file', 'encrypted_key', 'iv', 'uploaded_at']
-        extra_kwargs = {'encrypted_key': {'write_only': True}, 'iv': {'write_only': True}}
+        fields = ['id', 'owner', 'name', 'file', 'encrypted_content', 'encryption_key', 'iv', 'uploaded_at', 'updated_at']
+
+    def create(self, validated_data):
+        # You can add custom create logic if needed, e.g., handling file encryption here
+        return File.objects.create(**validated_data)
 
 class FileShareSerializer(serializers.ModelSerializer):
     class Meta:
         model = FileShare
-        fields = ['id', 'file', 'shared_with', 'can_download', 'expires_at']
+        fields = ['id', 'file', 'shared_by', 'shared_with', 'permission', 'share_link', 'expires_at', 'created_at']
+
+    def create(self, validated_data):
+        # You can add custom create logic here if needed
+        return FileShare.objects.create(**validated_data)
