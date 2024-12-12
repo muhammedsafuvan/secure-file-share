@@ -17,6 +17,7 @@ class File(models.Model):
     iv = models.CharField(max_length=24)  # Base64 encoded 16-byte IV
     uploaded_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    auth_tag = models.CharField(max_length=24, default='')  
 
     def __str__(self):
         return self.name

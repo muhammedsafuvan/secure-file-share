@@ -1,3 +1,4 @@
+import os
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -12,6 +13,7 @@ from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
 import base64
 from django.core.files.base import ContentFile
+from django.conf import settings
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -36,42 +38,45 @@ class FileUploadView(APIView):
 
     def post(self, request):
         try:
-            # Get data from the JSON body
-            file_data = request.data.get('file')  # Base64 encoded file
-            encrypted_key = request.data.get("encryption_key")
-            iv = request.data.get("iv")
+            # Get data from the request
+            # file_data = request.data.get('file')  # Raw file data
             file_name = request.data.get("file_name")  # Get file name
-
-            # Validate required fields
-            if not file_data or not encrypted_key or not iv or not file_name:
+            file_data = request.FILES.get('file')  
+            
+            if not file_data or not file_name:
                 return Response(
-                    {"error": "Missing required fields: 'file', 'encryption_key', 'iv', 'file_name'"},
+                    {"error": "Missing required fields: 'file' and 'file_name'"},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
             # Decode the base64-encoded file
             try:
-                file_content = base64.b64decode(file_data)
+                file_content = file_data.read()
 
-                # Save the file using the file name provided by the client
-                file = ContentFile(file_content, name=file_name)
+                # Generate encryption key, IV, and auth tag
+                encrypted_data, encryption_key, iv, auth_tag = self.encrypt_file(file_content)
 
-                # Save the file to the database
+
+                # Save the encrypted file using the original file name
+                file = ContentFile(encrypted_data, name=file_name)
+
+                # Save the encrypted file to the database
                 new_file = File.objects.create(
                     owner=request.user,
                     name=file_name,
                     file=file,
-                    encryption_key=encrypted_key,
-                    iv=iv,
+                    encryption_key=base64.b64encode(encryption_key).decode('utf-8'),
+                    iv=base64.b64encode(iv).decode('utf-8'),
+                    auth_tag=base64.b64encode(auth_tag).decode('utf-8')
                 )
 
                 # Serialize and return the file details
                 serializer = FileSerializer(new_file)
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
-            
+
             except Exception as e:
                 return Response(
-                    {"error": f"Failed to decode file: {str(e)}"},
+                    {"error": f"Failed to decode or encrypt file: {str(e)}"},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
@@ -80,6 +85,26 @@ class FileUploadView(APIView):
                 {"error": f"An unexpected error occurred. Please try again later. {str(e)}"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
+
+    def encrypt_file(self, file_content):
+        """Encrypt the file using AES-GCM and return the encrypted data along with encryption parameters."""
+        # Generate a random 256-bit key and 12-byte IV for AES-GCM
+        key = os.urandom(32)  # AES-256 key
+        iv = os.urandom(12)   # 12-byte IV required for AES-GCM
+
+        # Create AES-GCM cipher
+        cipher = Cipher(algorithms.AES(key), modes.GCM(iv), backend=default_backend())
+        encryptor = cipher.encryptor()
+
+        # Encrypt the file content
+        encrypted_data = encryptor.update(file_content) + encryptor.finalize()
+
+        # Get the authentication tag (for AES-GCM)
+        auth_tag = encryptor.tag
+
+        # Return encrypted data, key, IV, and authentication tag
+        return encrypted_data, key, iv, auth_tag
+
 
 
 
@@ -141,23 +166,38 @@ class FileDownloadView(APIView):
         # Decrypt the file content before returning it
         encrypted_key = file.encryption_key
         iv = file.iv
-
-        # Decrypt the file (you'll implement your decryption logic here)
-        decrypted_file = self.decrypt_file(file.file, encrypted_key, iv)
+        auth_tag = file.auth_tag
 
         try:
-            response = FileResponse(decrypted_file, as_attachment=True, filename=file.name)
+            # Decrypt the file
+            decrypted_file = self.decrypt_file(file.file, auth_tag, encrypted_key, iv)
+
+            decrypt_dir = os.path.join(settings.MEDIA_ROOT, 'decrypt')  # media/decrypt directory inside MEDIA_ROOT
+            os.makedirs(decrypt_dir, exist_ok=True)  # Create the decrypt directory if it doesn't exist
+
+            # Path for the decrypted file (ensuring unique filename)
+            decrypted_file_path = os.path.join(decrypt_dir, f"decrypted_{file.id}_{file.name}")
+
+            # Save the decrypted file
+            with open(decrypted_file_path, "wb") as f:
+                f.write(decrypted_file)
+
+            # Return the decrypted file as a response (streaming from the file path)
+            response = FileResponse(open(decrypted_file_path, 'rb'), as_attachment=True, filename=file.name)
             return response
         except Exception as e:
-            return Response({'error': 'Error while accessing the file'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({'error': f'Error while accessing the file: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    def decrypt_file(self, ciphertext_b64, auth_tag_b64, key_b64, iv_b64):
+    def decrypt_file(self, file_content, auth_tag_b64, key_b64, iv_b64):
         """Decrypt the file using AES-GCM."""
-        # Decode the base64-encoded values
-        ciphertext = base64.b64decode(ciphertext_b64)
+        # Decode the base64-encoded values if necessary
         auth_tag = base64.b64decode(auth_tag_b64)
         key = base64.b64decode(key_b64)
         iv = base64.b64decode(iv_b64)
+
+        # Read the encrypted file content
+        with open(file_content.path, "rb") as f:
+            ciphertext = f.read()
 
         # Ensure IV is 12 bytes (required for AES-GCM)
         if len(iv) != 12:
@@ -170,6 +210,8 @@ class FileDownloadView(APIView):
         # Decrypt the ciphertext
         decrypted_data = decryptor.update(ciphertext) + decryptor.finalize()
         return decrypted_data
+
+
 
 class UserOwnedFilesView(APIView):
     permission_classes = [IsAuthenticated]

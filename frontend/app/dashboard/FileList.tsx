@@ -21,6 +21,7 @@ export default function FileList() {
   const [loadingShared, setLoadingShared] = useState<boolean>(true);
   const [errorOwned, setErrorOwned] = useState<string | null>(null);
   const [errorShared, setErrorShared] = useState<string | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchOwnedFiles = async () => {
@@ -53,44 +54,68 @@ export default function FileList() {
     fetchSharedFiles();
   }, []);
 
-  // const handleDownload = async (file: File) => {
-  //   try {
-  //     const res = await fetch(file.file); // Assuming `file` contains the downloadable URL
-  //     const blob = await res.blob();
-  //     const link = document.createElement("a");
-  //     link.href = URL.createObjectURL(blob);
-  //     link.download = file.name;
-  //     link.click();
-  //     URL.revokeObjectURL(link.href); // Clean up
-  //   } catch {
-  //     alert("Failed to download file.");
-  //   }
-  // };
-
   const handleDownload = async (fileId: string, fileName: string) => {
-    console.log("FILE ID", fileId)
     try {
-      // Make a GET request to the API endpoint
       const response = await api.get(`http://localhost:8000/api/files/download/${fileId}/`, {
-        responseType: 'blob', // Ensure the response is treated as a binary blob
+        responseType: "blob",
       });
-  
-      // Create a blob from the response data
+
       const blob = new Blob([response.data]);
-      const link = document.createElement('a');
-  
-      // Generate a temporary URL for the blob and set it for the download link
+      const link = document.createElement("a");
       link.href = URL.createObjectURL(blob);
-      link.download = fileName; // Use the provided file name
+      link.download = fileName;
       document.body.appendChild(link);
       link.click();
-  
-      // Clean up
+
       URL.revokeObjectURL(link.href);
       document.body.removeChild(link);
     } catch (error) {
-      console.error('Error downloading file:', error);
-      alert('Failed to download the file.');
+      console.error("Error downloading file:", error);
+      alert("Failed to download the file.");
+    }
+  };
+
+  const handlePreview = async (fileId: string) => {
+    try {
+      // Make a GET request to download the decrypted file
+      const response = await api.get(`http://localhost:8000/api/files/download/${fileId}/`, {
+        responseType: "blob", // Ensure we get the file as a binary blob
+      });
+  
+      // Extract MIME type and filename from the headers
+      const contentType = response.headers["content-type"] || "application/octet-stream";
+      const contentDisposition = response.headers["content-disposition"];
+      let fileName = "file";
+  
+      if (contentDisposition && contentDisposition.includes("filename=")) {
+        fileName = contentDisposition.split("filename=")[1].replace(/"/g, "");
+      }
+  
+      // Create a Blob for the file data
+      const blob = new Blob([response.data], { type: contentType });
+  
+      // Handle file preview based on content type
+      const previewUrl = URL.createObjectURL(blob);
+  
+      if (contentType.startsWith("image/")) {
+        // Directly set preview for image files
+        // setPreviewUrl(previewUrl);
+        window.open(previewUrl, "_blank");
+      } else if (contentType === "application/pdf") {
+        // Open PDF in a new browser tab
+        window.open(previewUrl, "_blank");
+      } else {
+        // For unsupported preview types, trigger download
+        const link = document.createElement("a");
+        link.href = previewUrl;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+      }
+    } catch (error) {
+      console.error("Error previewing file:", error);
+      alert("Failed to preview the file.");
     }
   };
   
@@ -111,7 +136,8 @@ export default function FileList() {
             {ownedFiles.map((file) => (
               <li key={file.id}>
                 {file.name}{" "}
-                <button onClick={() => handleDownload(file.id, file.name)}>Download</button>
+                <button onClick={() => handleDownload(file.id, file.name)}>Download</button>{" "}
+                <button onClick={() => handlePreview(file.id)}>Preview</button>
               </li>
             ))}
           </ul>
@@ -131,12 +157,22 @@ export default function FileList() {
             {sharedFiles.map((file) => (
               <li key={file.id}>
                 {file.name}{" "}
-                <button onClick={() => handleDownload(file.id, file.name)}>Download</button>
+                <button onClick={() => handleDownload(file.id, file.name)}>Download</button>{" "}
+                <button onClick={() => handlePreview(file.id)}>Preview</button>
               </li>
             ))}
           </ul>
         )}
       </div>
+
+      {previewUrl && (
+        <div>
+          <h3>Preview</h3>
+          {/* Adjust preview logic based on the file type */}
+          <iframe src={previewUrl} width="100%" height="500px" style={{ border: "none" }}></iframe>
+          <button onClick={() => setPreviewUrl(null)}>Close Preview</button>
+        </div>
+      )}
     </div>
   );
 }

@@ -30,6 +30,7 @@ export default function FileUpload() {
   }, [router]);
 
   const handleUpload = async () => {
+    console.log("FILE", file)
     if (!file) {
       alert("Please select a file!");
       return;
@@ -45,19 +46,10 @@ export default function FileUpload() {
       return;
     }
 
-    try {
-      // Encrypt the file (optional, if applicable)
-      const { encryptedFile, encryptedKey, iv } = await encryptFile(file);
-
-      console.log('File name:', file.name);  
-      const jsonData = {
-        file: encryptedFile,  // Base64 encoded file
-        encryption_key: encryptedKey,
-        iv: iv,
-        file_name: file.name,  // Send the file name
-      };
-      
-
+    try {      
+      const formData = new FormData();
+      formData.append("file", file);  // Append the file without encryption
+      formData.append("file_name", file.name);  
 
       // Create FormData for file upload
       // const formData = new FormData();
@@ -66,7 +58,7 @@ export default function FileUpload() {
       // formData.append("iv", iv);
 
       // Make API call
-      await api.post("http://localhost:8000/api/files/upload/", jsonData, {
+      await api.post("http://localhost:8000/api/files/upload/", formData, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
         },

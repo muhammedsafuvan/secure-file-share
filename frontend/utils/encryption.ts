@@ -10,13 +10,13 @@ export async function encryptFile(file: File) {
   );
 
   // Generate a random 128-bit IV (16 bytes)
-  const iv = crypto.getRandomValues(new Uint8Array(12)); // 12 bytes is a common length for AES-GCM
+  const iv = crypto.getRandomValues(new Uint8Array(12));  // 12 bytes is a common length for AES-GCM
 
   // Convert the file to an ArrayBuffer
   const fileArrayBuffer = await file.arrayBuffer();
 
   // Encrypt the file using AES-GCM
-  const encryptedFile = await crypto.subtle.encrypt(
+  const encryptedResult = await crypto.subtle.encrypt(
     {
       name: "AES-GCM",
       iv: iv,
@@ -25,9 +25,14 @@ export async function encryptFile(file: File) {
     fileArrayBuffer
   );
 
-  // Encode the encrypted file and IV to base64 to make it easier to handle in JSON
+  // The result of the encryption contains both the ciphertext and the auth tag
+  const encryptedFile = encryptedResult.slice(0, encryptedResult.byteLength - 16); // ciphertext
+  const authTag = encryptedResult.slice(encryptedResult.byteLength - 16); // last 16 bytes are the auth tag
+
+  // Encode the encrypted file, IV, and auth tag to base64 to make it easier to handle in JSON
   const encryptedFileBase64 = bufferToBase64(encryptedFile);
   const ivBase64 = bufferToBase64(iv);
+  const authTagBase64 = bufferToBase64(authTag);
 
   // Export the encryption key to base64 (only for storage or sharing, not to be used in encryption directly)
   const exportedKey = await crypto.subtle.exportKey("raw", key);
@@ -37,6 +42,7 @@ export async function encryptFile(file: File) {
     encryptedFile: encryptedFileBase64,
     encryptedKey: encryptedKey,
     iv: ivBase64,
+    authTag: authTagBase64, // Return the auth tag
   };
 }
 
