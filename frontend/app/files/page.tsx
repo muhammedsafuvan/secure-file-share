@@ -2,15 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation"; // Correct import for App Router
-import FileUpload from "./FileUpload";
+import FileList from "./FileList";
 
 export default function Dashboard() {
   const router = useRouter();
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const userEmail = localStorage.getItem("userEmail");
-  const userName = userEmail ? userEmail.split("@")[0] : null;
-
 
   useEffect(() => {
     const userEmail = localStorage.getItem("userEmail");
@@ -32,9 +29,8 @@ export default function Dashboard() {
 
   return (
     <main>
-      <h1>Dashboard</h1>
-      <h2>Hello {userName}</h2>
-      <FileUpload />
+      <h1>List Files</h1>
+      <FileList />
     </main>
   );
 }

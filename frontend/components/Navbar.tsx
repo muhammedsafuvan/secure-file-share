@@ -17,6 +17,7 @@ export default function Navbar() {
   const handleLogout = () => {
     dispatch(clearUser()); // Clear user data from Redux
     localStorage.removeItem("authToken");
+    localStorage.removeItem("userEmail");
     router.push("/login"); // Redirect to login page
   };
 
@@ -30,11 +31,14 @@ export default function Navbar() {
           <Link href="/dashboard">Dashboard</Link>
         </li>
         <li>
-          {loggedIn ? (
-            <button onClick={handleLogout}>Logout</button> // Show Logout if logged in
-          ) : (
-            <Link href="/login">Login</Link> // Show Login if not logged in
-          )}
+          <Link href="/files">Files</Link>
+        </li>
+        <li>
+          {/* {loggedIn ? ( */}
+        <button onClick={handleLogout}>Logout</button>
+          {/* ) : ( */}
+        {/* <Link href="/logout">Logout</Link>  */}
+          {/* )} */}
         </li>
       </ul>
     </nav>

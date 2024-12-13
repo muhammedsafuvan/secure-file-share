@@ -65,6 +65,7 @@ export default function FileUpload() {
       });
 
       alert("File uploaded successfully!");
+      router.push("/files");
     } catch (error) {
       console.error("Upload error:", error);
       alert("Failed to upload file.");

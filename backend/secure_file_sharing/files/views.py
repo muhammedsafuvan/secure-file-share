@@ -14,6 +14,7 @@ from cryptography.hazmat.backends import default_backend
 import base64
 from django.core.files.base import ContentFile
 from django.conf import settings
+from django.utils.timezone import now
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -117,12 +118,12 @@ class FileShareView(APIView):
         except File.DoesNotExist:
             return Response({'error': 'File not found'}, status=status.HTTP_404_NOT_FOUND)
 
-        shared_with_username = request.data.get('shared_with')
-        permission = request.data.get('permission', 'VIEW')
-        expires_in = request.data.get('expires_in')  # in hours
+        shared_with_email = request.data.get('email')
+        # permission = request.data.get('permission', 'VIEW')
+        expires_in = request.data.get('expire_time')  # in hours
 
         try:
-            shared_with_user = User.objects.get(username=shared_with_username)
+            shared_with_user = User.objects.get(email=shared_with_email)
         except User.DoesNotExist:
             return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
 
@@ -134,7 +135,7 @@ class FileShareView(APIView):
             file=file,
             shared_by=request.user,
             shared_with=shared_with_user,
-            permission=permission,
+            permission='VIEW',
             expires_at=expires_at
         )
 
@@ -152,13 +153,15 @@ class FileDownloadView(APIView):
         except File.DoesNotExist:
             return Response({'error': 'File not found'}, status=status.HTTP_404_NOT_FOUND)
 
+        is_view = request.GET.get('isView', 'false') == 'true'
+  
         # Check if the user is the owner or has access via a share
-        if file.owner != request.user:
+        if (file.owner != request.user) or is_view:
             try:
                 file_share = FileShare.objects.get(file=file, shared_with=request.user)
                 if file_share.is_expired:
                     return Response({'error': 'File share has expired'}, status=status.HTTP_403_FORBIDDEN)
-                if file_share.permission == FileShare.Permission.VIEW:
+                if file_share.permission == FileShare.Permission.VIEW and is_view == False:
                     return Response({'error': 'You do not have permission to download this file'}, status=status.HTTP_403_FORBIDDEN)
             except FileShare.DoesNotExist:
                 return Response({'error': 'You do not have access to this file'}, status=status.HTTP_403_FORBIDDEN)
@@ -239,7 +242,10 @@ class UserSharedFilesView(APIView):
     def get(self, request):
         try:
             # Get all FileShare objects where the authenticated user is the "shared_with"
-            file_shares = FileShare.objects.filter(shared_with=request.user)
+            file_shares = FileShare.objects.filter(
+                shared_with=request.user, 
+                expires_at__gt=now()  # Only include shares that have not expired
+            )
 
             if not file_shares.exists():
                 return Response({"detail": "No shared files found."}, status=status.HTTP_404_NOT_FOUND)
