@@ -5,7 +5,6 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from django.http import FileResponse, Http404
 from django.utils import timezone
-from django.shortcuts import get_object_or_404
 from .models import File, FileShare
 from .serializers import FileSerializer, FileShareSerializer
 from users.models import User
@@ -20,17 +19,10 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
-from django.core.exceptions import ValidationError
 from .models import File
 from .serializers import FileSerializer
 
-# Allowed file types and size limit
-# ALLOWED_FILE_TYPES = [
-#     "image/png",
-#     "image/jpeg",
-#     "application/pdf",
-#     "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-# ]
+
 MAX_FILE_SIZE = 5 * 1024 * 1024  # 5 MB
 
 
