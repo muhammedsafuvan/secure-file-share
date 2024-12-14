@@ -79,10 +79,10 @@ export default function FileList() {
     }
   };
 
-  const handlePreview = async (fileId: string) => {
+  const handlePreview = async (fileId: string, isView: boolean = false) => {
     try {
       const response = await api.get(`http://localhost:8000/api/files/download/${fileId}/`, {
-        params: { isView: "true" }, 
+        params: { isView: isView }, 
         responseType: "blob",
       });
 
@@ -168,7 +168,7 @@ export default function FileList() {
             {sharedFiles.map((file) => (
               <li key={file.id}>
                 {file.name} {" "}
-                <button onClick={() => handlePreview(file.id)}>View</button>
+                <button onClick={() => handlePreview(file.id, true)}>View</button>
               </li>
             ))}
           </ul>
