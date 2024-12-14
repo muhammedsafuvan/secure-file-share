@@ -1,0 +1,24 @@
+version: '3'
+
+services:
+  backend:
+    build: ./backend/secure_file_sharing
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/secure_file_sharing:/app
+    environment:
+      - DATABASE_URL=sqlite:///db.sqlite3
+      - JWT_SECRET_KEY=your-secret-key
+      - ENCRYPTION_KEY=your-encryption-key
+    depends_on:
+      - frontend
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+    depends_on:
+      - backend
