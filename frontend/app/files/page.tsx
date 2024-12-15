@@ -31,7 +31,6 @@ export default function Dashboard() {
   return (
     <main>
     <Navbar />
-      <h1>List Files</h1>
       <FileList />
     </main>
   );

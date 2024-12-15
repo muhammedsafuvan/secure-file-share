@@ -35,8 +35,6 @@ export default function Dashboard() {
     <main>
       <Navbar />
 
-      <h1>Dashboard</h1>
-      <h2>Hello {userName}</h2>
       <FileUpload />
     </main>
   );

@@ -37,7 +37,7 @@ export default function FileList() {
         });
         setOwnedFiles(res.data);
       } catch (err) {
-        setErrorOwned("Failed to fetch owned files.");
+        setErrorOwned("No owned files found. Start by uploading your files.");
       } finally {
         setLoadingOwned(false);
       }
@@ -131,154 +131,147 @@ export default function FileList() {
   };
 
   return (
-    <div>
-      
-      <h2>Uploaded Files</h2>
-      <div>
-        <h3>Owned Files</h3>
+    <div className="min-h-screen flex flex-col items-center justify-start bg-gray-50 dark:bg-gray-900 py-12 px-6">
+      <h2 className="text-4xl font-semibold text-center text-gray-900 dark:text-white mb-6">
+        Uploaded Files
+      </h2>
+  
+      <div className="w-full max-w-4xl bg-white rounded-lg shadow-lg dark:bg-gray-800 dark:border-gray-700 p-8">
+        <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+          Owned Files
+        </h3>
+  
         {loadingOwned ? (
-          <p>Loading owned files...</p>
+          <p className="text-gray-600 dark:text-gray-400 text-center">Loading owned files...</p>
         ) : errorOwned ? (
-          <p style={{ color: "grey" }}>{errorOwned}</p>
+          <p className="text-gray-400 text-center">{errorOwned}</p>
         ) : ownedFiles.length === 0 ? (
-          <p>No owned files found.</p>
+          <p className="text-gray-400 dark:text-gray-600 text-center">No owned files found.</p>
         ) : (
-          <ul>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6">
             {ownedFiles.map((file) => (
-              <li key={file.id}>
-                {file.name} {" "}
-                <button onClick={() => handleDownload(file.id, file.name)}>Download</button> {" "}
-                <button onClick={() => handlePreview(file.id)}>View</button> {" "}
-                <button onClick={() => handleShare(file.id)}>Share</button>
-              </li>
+              <div
+                className="w-full max-w-md md:max-w-2xl h-auto bg-white rounded-lg shadow-md p-6 dark:bg-gray-800 dark:border-gray-700"
+                key={file.id}
+              >
+                <p className="text-gray-900 dark:text-white mb-4">{file.name}</p>
+                <div className="flex justify-between space-x-4">
+                  <button
+                    onClick={() => handleDownload(file.id, file.name)}
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white py-2 px-4 rounded-lg dark:bg-emerald-600 dark:hover:bg-emerald-700"
+                  >
+                    Download
+                  </button>
+                  <button
+                    onClick={() => handlePreview(file.id)}
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white py-2 px-4 rounded-lg dark:bg-emerald-600 dark:hover:bg-emerald-700"
+                  >
+                    View
+                  </button>
+                  <button
+                    onClick={() => handleShare(file.id)}
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white py-2 px-4 rounded-lg dark:bg-emerald-600 dark:hover:bg-emerald-700"
+                  >
+                    Share
+                  </button>
+                </div>
+              </div>
             ))}
-          </ul>
+          </div>
         )}
-      </div>
-
-      <div>
-        <h3>Shared Files</h3>
+  
+        <h3 className="text-2xl font-bold text-gray-900 dark:text-white mt-12 mb-6">
+          Shared Files
+        </h3>
+  
         {loadingShared ? (
-          <p>Loading shared files...</p>
+          <p className="text-gray-600 dark:text-gray-400 text-center">Loading shared files...</p>
         ) : errorShared ? (
-          <p style={{ color: "grey" }}>{errorShared}</p>
+          <p className="text-gray-400 text-center">{errorShared}</p>
         ) : sharedFiles.length === 0 ? (
-          <p>No shared files found.</p>
+          <p className="text-gray-400 dark:text-gray-600 text-center">No shared files found.</p>
         ) : (
-          <ul>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6">
             {sharedFiles.map((file) => (
-              <li key={file.id}>
-                {file.name} {" "}
-                <button onClick={() => handlePreview(file.id, true)}>View</button>
-              </li>
+              <div
+                className="bg-white rounded-lg shadow-md p-6 dark:bg-gray-800 dark:border-gray-700"
+                key={file.id}
+              >
+                <p className="text-gray-900 dark:text-white mb-4">{file.name}</p>
+                <button
+                  onClick={() => handlePreview(file.id, true)}
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white py-2 px-4 rounded-lg dark:bg-emerald-600 dark:hover:bg-emerald-700"
+                >
+                  View
+                </button>
+              </div>
             ))}
-          </ul>
+          </div>
         )}
       </div>
-
+  
       {previewUrl && (
-        <div>
-          <h3>Preview</h3>
-          <iframe src={previewUrl} width="100%" height="500px" style={{ border: "none" }}></iframe>
-          <button onClick={() => setPreviewUrl(null)}>Close Preview</button>
-        </div>
-      )}
-
-      {/* {showShareModal && (
-        <div className="modal">
-          <div className="modal-content">
-            <h3>Share File</h3>
-            <input
-              type="email"
-              placeholder="Enter email address"
-              value={emailToShare}
-              onChange={(e) => setEmailToShare(e.target.value)}
-            />
-            <button onClick={handleConfirmShare}>Confirm</button>
-            <button onClick={() => setShowShareModal(false)}>Cancel</button>
-          </div>
-        </div>
-      )} */}
-
-{showShareModal && (
-        <div className="modal-overlay">
-          <div className="modal-box">
-            <h3>Share File</h3>
-            <div style={{ marginBottom: "10px" }}>
-              <label>Email Address:</label>
-              <input
-                type="email"
-                placeholder="Enter email address"
-                value={emailToShare}
-                onChange={(e) => setEmailToShare(e.target.value)}
-                style={{ width: "100%", padding: "5px" }}
-              />
-            </div>
-            <div style={{ marginBottom: "10px" }}>
-              <label>Expire Time (hours):</label>
-              <input
-                type="number"
-                placeholder="Enter expire time"
-                value={expireTime}
-                onChange={(e) => setExpireTime(e.target.value)}
-                style={{ width: "100%", padding: "5px" }}
-              />
-            </div>
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <button onClick={handleConfirmShare} style={{ padding: "5px 10px" }}>
-                Confirm
-              </button>
-              <button onClick={() => setShowShareModal(false)} style={{ padding: "5px 10px" }}>
-                Cancel
-              </button>
-            </div>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white rounded-lg shadow-lg p-8 dark:bg-gray-800 dark:border-gray-700">
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Preview</h3>
+            <iframe src={previewUrl} width="100%" height="500px" className="mb-4"></iframe>
+            <button
+              onClick={() => setPreviewUrl(null)}
+              className="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg dark:bg-red-600 dark:hover:bg-red-700"
+            >
+              Close Preview
+            </button>
           </div>
         </div>
       )}
+  
+  {showShareModal && (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+    <div className="bg-white rounded-lg shadow-lg p-10 w-full sm:w-96 md:w-[600px] dark:bg-gray-800 dark:border-gray-700">
+      <h3 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6">Share File</h3>
 
-      <style jsx>{`
-        .modal-overlay {
-          position: fixed;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          background: rgba(0, 0, 0, 0.5);
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          z-index: 1000;
-        }
+      <div className="mb-6">
+        <label className="block text-gray-900 dark:text-white mb-2">Email Address:</label>
+        <input
+          type="email"
+          value={emailToShare}
+          onChange={(e) => setEmailToShare(e.target.value)}
+          className="w-full p-3 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300"
+        />
+      </div>
 
-        .modal-box {
-          background: white;
-          padding: 20px;
-          border-radius: 8px;
-          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-          width: 300px;
-        }
+      <div className="mb-6">
+        <label className="block text-gray-900 dark:text-white mb-2">Expire Time (hours):</label>
+        <input
+          type="number"
+          value={expireTime}
+          onChange={(e) => setExpireTime(e.target.value)}
+          className="w-full p-3 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300"
+        />
+      </div>
 
-        label {
-          font-weight: bold;
-          display: block;
-          margin-bottom: 5px;
-        }
-
-        input {
-          border: 1px solid #ccc;
-          border-radius: 4px;
-        }
-
-        button {
-          border: none;
-          cursor: pointer;
-        }
-
-        button:hover {
-          background: #f0f0f0;
-        }
-      `}</style>
+      <div className="flex justify-end space-x-4">
+        <button
+          onClick={handleConfirmShare}
+          className="bg-emerald-600 hover:bg-emerald-700 text-white py-2 px-6 rounded-lg dark:bg-emerald-600 dark:hover:bg-emerald-700"
+        >
+          Confirm
+        </button>
+        <button
+          onClick={() => setShowShareModal(false)}
+          className="bg-red-600 hover:bg-red-700 text-white py-2 px-6 rounded-lg dark:bg-red-600 dark:hover:bg-red-700"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+)}
 
     </div>
   );
+  
+  
+  
+    
 }
