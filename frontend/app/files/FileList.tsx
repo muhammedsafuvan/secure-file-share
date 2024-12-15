@@ -12,6 +12,7 @@ type File = {
   iv: string;
   uploaded_at: string;
   updated_at: string;
+  permission: string;
 };
 
 export default function FileList() {
@@ -26,6 +27,7 @@ export default function FileList() {
   const [emailToShare, setEmailToShare] = useState<string>("");
   const [fileToShare, setFileToShare] = useState<string | null>(null);
   const [expireTime, setExpireTime] = useState<string>("");
+  const [permission, setPermission] =  useState<string>("");
 
   useEffect(() => {
     const fetchOwnedFiles = async () => {
@@ -46,6 +48,7 @@ export default function FileList() {
     const fetchSharedFiles = async () => {
       try {
         const res = await api.get("http://localhost:8000/api/files/shared/");
+        console.log("SHARED FILES", res)
         setSharedFiles(res.data);
       } catch (err) {
         setErrorShared("No shared files found.");
@@ -118,12 +121,14 @@ export default function FileList() {
       await api.post(`http://localhost:8000/api/files/share/${fileToShare}/`, {
         email: emailToShare,
         expire_time: parseInt(expireTime, 10),
+        permission:  permission,
       });
       alert("File shared successfully!");
       setShowShareModal(false);
       setEmailToShare("");
       setExpireTime("");
       setFileToShare(null);
+      setPermission("");
     } catch (error) {
       console.error("Error sharing file:", error);
       alert("Failed to share the file.");
@@ -185,29 +190,53 @@ export default function FileList() {
         </h3>
   
         {loadingShared ? (
-          <p className="text-gray-600 dark:text-gray-400 text-center">Loading shared files...</p>
-        ) : errorShared ? (
-          <p className="text-gray-400 text-center">{errorShared}</p>
-        ) : sharedFiles.length === 0 ? (
-          <p className="text-gray-400 dark:text-gray-600 text-center">No shared files found.</p>
+  <p className="text-gray-600 dark:text-gray-400 text-center">Loading shared files...</p>
+) : errorShared ? (
+  <p className="text-gray-400 text-center">{errorShared}</p>
+) : sharedFiles.length === 0 ? (
+  <p className="text-gray-400 dark:text-gray-600 text-center">No shared files found.</p>
+) : (
+  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6">
+    {sharedFiles.map((file) => (
+      <div
+        className="bg-white rounded-lg shadow-md p-6 dark:bg-gray-800 dark:border-gray-700"
+        key={file.id}
+      >
+        <p className="text-gray-900 dark:text-white mb-4">{file.name}</p>
+        
+        {file.permission === 'BOTH' ? (
+          <>
+            <div className="flex justify-between space-x-4">
+                  <button
+                    onClick={() => handleDownload(file.id, file.name)}
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white py-2 px-4 rounded-lg dark:bg-emerald-600 dark:hover:bg-emerald-700"
+                  >
+                    Download
+                  </button>
+                  <button
+                    onClick={() => handlePreview(file.id)}
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white py-2 px-4 rounded-lg dark:bg-emerald-600 dark:hover:bg-emerald-700"
+                  >
+                    View
+                  </button>
+                  
+                </div>
+          </>
+        ) : file.permission === 'VIEW' ? (
+          <button
+                    onClick={() => handlePreview(file.id)}
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white py-2 px-4 rounded-lg dark:bg-emerald-600 dark:hover:bg-emerald-700"
+                  >
+                    View
+                  </button>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6">
-            {sharedFiles.map((file) => (
-              <div
-                className="bg-white rounded-lg shadow-md p-6 dark:bg-gray-800 dark:border-gray-700"
-                key={file.id}
-              >
-                <p className="text-gray-900 dark:text-white mb-4">{file.name}</p>
-                <button
-                  onClick={() => handlePreview(file.id, true)}
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white py-2 px-4 rounded-lg dark:bg-emerald-600 dark:hover:bg-emerald-700"
-                >
-                  View
-                </button>
-              </div>
-            ))}
-          </div>
+          <p className="text-gray-500 dark:text-gray-400">No actions available</p>
         )}
+      </div>
+    ))}
+  </div>
+)}
+
       </div>
   
       {previewUrl && (
@@ -250,6 +279,18 @@ export default function FileList() {
         />
       </div>
 
+      <div className="mb-6">
+        <label className="block text-gray-900 dark:text-white mb-2">Permission:</label>
+        <select
+          value={permission}
+          onChange={(e) => setPermission(e.target.value)}
+          className="w-full p-3 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300"
+        >
+          <option value="VIEW">View only</option>
+          <option value="BOTH">View and download</option>
+        </select>
+      </div>
+
       <div className="flex justify-end space-x-4">
         <button
           onClick={handleConfirmShare}
@@ -267,6 +308,7 @@ export default function FileList() {
     </div>
   </div>
 )}
+
 
     </div>
   );

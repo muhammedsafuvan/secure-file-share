@@ -71,12 +71,14 @@ class FileShareView(APIView):
 
         shared_with_email = request.data.get('email')
         expires_in = request.data.get('expire_time')
+        permission = request.data.get('permission')
 
         file_share = FileShareRepo.create_file_share(
             file=file,
             shared_by=request.user,
             shared_with_email=shared_with_email,
-            expires_in=expires_in
+            expires_in=expires_in,
+            permission=permission,
         )
 
         if not file_share:
@@ -147,14 +149,21 @@ class UserSharedFilesView(APIView):
 
     def get(self, request):
         try:
+            # Get all file shares for the user
             file_shares = FileShareRepo.get_user_shared_files(request.user)
 
             if not file_shares.exists():
                 return Response({"detail": "No shared files found."}, status=status.HTTP_404_NOT_FOUND)
 
-            files = [file_share.file for file_share in file_shares]
-            serializer = FileSerializer(files, many=True)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            # Serialize the file shares, including file and permission
+            data = []
+            for file_share in file_shares:
+                file_data = FileSerializer(file_share.file).data
+                file_data['permission'] = file_share.permission  # Add permission field
+                data.append(file_data)
+
+            return Response(data, status=status.HTTP_200_OK)
 
         except Exception as e:
             return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+

@@ -26,6 +26,7 @@ class FileShare(models.Model):
     class Permission(models.TextChoices):
         VIEW = 'VIEW', _('View')
         DOWNLOAD = 'DOWNLOAD', _('Download')
+        BOTH = 'BOTH', _('View and Download')
 
     file = models.ForeignKey(File, on_delete=models.CASCADE, related_name='shares')
     shared_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='shared_files', default=get_default_user)

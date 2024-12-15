@@ -19,7 +19,7 @@ class FileShareRepo:
             return None
 
     @staticmethod
-    def create_file_share(file, shared_by, shared_with_email, expires_in):
+    def create_file_share(file, shared_by, shared_with_email, expires_in, permission):
         """Create a new file share entry."""
         try:
             shared_with_user = User.objects.get(email=shared_with_email)
@@ -34,7 +34,7 @@ class FileShareRepo:
             file=file,
             shared_by=shared_by,
             shared_with=shared_with_user,
-            permission='VIEW',
+            permission=permission if permission else 'VIEW',
             expires_at=expires_at
         )
 
