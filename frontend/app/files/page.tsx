@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation"; // Correct import for App Router
 import FileList from "./FileList";
+import Navbar from "@/components/Navbar";
 
 export default function Dashboard() {
   const router = useRouter();
@@ -29,6 +30,7 @@ export default function Dashboard() {
 
   return (
     <main>
+    <Navbar />
       <h1>List Files</h1>
       <FileList />
     </main>

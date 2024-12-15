@@ -51,11 +51,6 @@ export default function FileUpload() {
       formData.append("file", file);  // Append the file without encryption
       formData.append("file_name", file.name);  
 
-      // Create FormData for file upload
-      // const formData = new FormData();
-      // formData.append("file", encryptedFile);
-      // formData.append("encryption_key", encryptedKey);
-      // formData.append("iv", iv);
 
       // Make API call
       await api.post("http://localhost:8000/api/files/upload/", formData, {

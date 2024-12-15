@@ -65,7 +65,7 @@ class FileShareView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, file_id):
-        file = FileRepo.get_file_by_id(file_id, request.user)
+        file = FileRepo.get_file_by_id(file_id)
         if not file:
             return Response({'error': 'File not found'}, status=status.HTTP_404_NOT_FOUND)
 
