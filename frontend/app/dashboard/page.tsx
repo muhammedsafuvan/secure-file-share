@@ -9,8 +9,6 @@ export default function Dashboard() {
   const router = useRouter();
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const userEmail = localStorage.getItem("userEmail");
-  const userName = userEmail ? userEmail.split("@")[0] : null;
 
 
   useEffect(() => {

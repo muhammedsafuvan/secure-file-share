@@ -2,16 +2,14 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useSelector, useDispatch } from "react-redux"; // Import useSelector
+import { useDispatch } from "react-redux"; // Import useSelector
 import { clearUser } from "@/redux/slices/userSlice";
-import { RootState } from "@/redux/store";
 
 export default function Navbar() {
   const router = useRouter();
   const dispatch = useDispatch();
 
   // Get the loggedIn state from the Redux store
-  const loggedIn = useSelector((state: RootState) => state.user.loggedIn);
 
   const handleLogout = () => {
     dispatch(clearUser()); // Clear user data from Redux

@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/utils/api";
+import { AxiosError } from 'axios';
+
 
 export default function LogoutForm() {
   const [loading, setLoading] = useState(false);
@@ -23,8 +25,12 @@ export default function LogoutForm() {
 
       // Redirect to login or home page
       router.push("/");
-    } catch (err: any) {
-      setError(err.response?.data?.error || "Logout failed.");
+    } catch (err: unknown) {
+      if (err instanceof AxiosError) {
+        setError(err.response?.data?.error || "Logout failed.");
+      } else {
+        setError("An unknown error occurred.");
+      }
     } finally {
       setLoading(false);
     }

@@ -38,24 +38,31 @@ export default function FileList() {
           },
         });
         setOwnedFiles(res.data);
-      } catch (err) {
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          console.error("Error fetching owned files:", err.message);
+        }
         setErrorOwned("No owned files found. Start by uploading your files.");
       } finally {
         setLoadingOwned(false);
       }
     };
-
+    
     const fetchSharedFiles = async () => {
       try {
         const res = await api.get("http://localhost:8000/api/files/shared/");
-        console.log("SHARED FILES", res)
+        console.log("SHARED FILES", res);
         setSharedFiles(res.data);
-      } catch (err) {
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          console.error("Error fetching shared files:", err.message);
+        }
         setErrorShared("No shared files found.");
       } finally {
         setLoadingShared(false);
       }
     };
+    
 
     fetchOwnedFiles();
     fetchSharedFiles();

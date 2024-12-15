@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import api from "@/utils/api"; // Ensure api utility attaches Authorization header
 import { useRouter } from "next/navigation"; // Use correct import
-import { encryptFile } from "@/utils/encryption"; // Assuming this function exists
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
 const ALLOWED_TYPES = [

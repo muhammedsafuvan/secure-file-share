@@ -59,7 +59,7 @@ class EmailUtility:
         user.save()
 
         subject = 'Email Verification OTP'
-        message = f'Your OTP for verification is {otp}. It will expire in 10 minutes.'
+        message = f'Your OTP for verification is {otp}. It will expire in 5 minutes.'
         send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [user.email])
 
     @staticmethod

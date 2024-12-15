@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import api from "@/utils/api";
+import { AxiosError } from "axios";
 
 interface SecureShareLinkProps {
   fileId: string;
@@ -15,8 +16,13 @@ export default function SecureShareLink({ fileId }: SecureShareLinkProps) {
         expiresIn: 3600, // 1 hour
       });
       setLink(res.data.link);
-    } catch (error) {
+    } catch (error: unknown) {
       alert("Failed to generate link.");
+      if (error instanceof AxiosError) {
+        console.error("Error details:", error.response?.data);
+      } else {
+        console.error("An unexpected error occurred:", error);
+      }
     }
   };
 

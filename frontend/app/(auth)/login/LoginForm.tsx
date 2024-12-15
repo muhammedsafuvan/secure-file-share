@@ -1,17 +1,9 @@
 "use client";
+import { AxiosError } from 'axios';
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/utils/api";
-import Link from "next/link";
-import {
-  Card,
-  CardContent,
-  TextField,
-  Button,
-  Checkbox,
-  FormControlLabel,
-} from "@mui/material";
 
 export default function LoginForm() {
   const [email, setEmail] = useState("");
@@ -19,7 +11,6 @@ export default function LoginForm() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const imgSource = '/assets/img/login-office-dark.jpeg';
 
   const validateInputs = () => {
     // Email validation: checks if the email is in a valid format
@@ -61,8 +52,12 @@ export default function LoginForm() {
 
       // Redirect to dashboard or home page
       router.push("/dashboard");
-    } catch (err: any) {
-      setError(err.response?.data?.error || "Login failed.");
+    } catch (err: unknown) {
+      if (err instanceof AxiosError) {
+        setError(err.response?.data?.error || "Login failed.");
+      } else {
+        setError("An unknown error occurred.");
+      }
     } finally {
       setLoading(false);
     }

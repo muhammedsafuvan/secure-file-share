@@ -6,7 +6,6 @@ const api = axios.create({
   withCredentials: true, // Include credentials if needed for cross-origin requests
 });
 
-console.log("BASE URL", process.env.NEXT_PUBLIC_BACKEND_API_URL)
 
 // Add an interceptor to include the token
 api.interceptors.request.use(
@@ -22,11 +21,17 @@ api.interceptors.request.use(
           { refresh: refreshToken }
         );
         
-        console.log("RES")
-        console.log(response)
 
-        token = response.data.access; // Get the new access token
-        localStorage.setItem("accessToken", token); // Save the new access token
+        // Ensure the token is not empty or null before assigning
+        if (response.data?.access) {
+          // Get the new access token and save it to localStorage
+          const token = response.data.access;
+          localStorage.setItem("accessToken", token); // Safe, token is guaranteed to be a string
+        } else {
+          // Handle the error if no access token is returned
+          throw new Error("No access token returned from refresh.");
+        }
+        
       } catch (error) {
         console.error("Failed to refresh token:", error);
         // Optionally clear tokens and redirect to login

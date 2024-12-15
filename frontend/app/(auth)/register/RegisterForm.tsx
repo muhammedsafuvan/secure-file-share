@@ -1,8 +1,8 @@
 "use client";
 import { useState } from "react";
 import api from "@/utils/api";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { AxiosError } from 'axios';
 
 export default function RegisterForm() {
   const [username, setUsername] = useState("");
@@ -64,13 +64,17 @@ export default function RegisterForm() {
         // Successful registration - redirect to OTP verification page
         router.push("/verify-otp");
       }
-    } catch (error: any) {
-      setError(
-        error.response?.data?.email?.[0] ||
-        error.response?.data?.username?.[0] ||
-        error.response?.data?.password?.[0] ||
-        "Registration failed."
-      );
+    } catch (error: unknown) {
+      if (error instanceof AxiosError) {
+        setError(
+          error.response?.data?.email?.[0] ||
+          error.response?.data?.username?.[0] ||
+          error.response?.data?.password?.[0] ||
+          "Registration failed."
+        );
+      } else {
+        setError("An unknown error occurred.");
+      }
     }
   };
 
