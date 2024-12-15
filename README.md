@@ -30,7 +30,6 @@
 ### 3. **Database**
    - **SQLite3**: A lightweight, serverless, self-contained SQL database engine used to store user data, file metadata, and permissions.
 
-
 ### 4. **DevOps**
    - **Docker**: For containerization of the application, ensuring consistency across different environments.
    - **Docker Compose**: Used for running the backend and database services together in development.
@@ -39,80 +38,95 @@
 
 ## Installation
 
-### 1. Clone the repository
+### Steps to Run the App
 
-```bash
-git clone https://github.com/yourusername/secure-file-sharing.git
-cd secure-file-sharing
-```
+1. **Clone the Repository**
 
+   ```bash
+   git clone https://github.com/yourusername/secure-file-sharing.git
+   cd secure-file-sharing
+   ```
 
-### 2. Install Dependencies
-Once you've cloned the repository, install the necessary dependencies using pip:
+2. **Set Up Environment Variables**
 
-```
-pip install -r requirements.txt
-```
+   Create a `.env` file in the root of your project and add the following environment variables:
 
-### 3. Set up Environment Variables
-Create a .env file in the root of your project and add the following environment variables:
+   ```
+   # Database Config
+   DATABASE_URL="sqlite:///db.sqlite3"
 
-```
-# Database Config
-DATABASE_URL="sqlite:///db.sqlite3"
+   # JWT Authentication Config
+   JWT_SECRET_KEY="your-secret-key"
 
+   # Encryption Config
+   ENCRYPTION_KEY="your-encryption-key"
+   ```
 
-# JWT Authentication Config
-JWT_SECRET_KEY="your-secret-key"
+3. **Run the App Using Docker Compose**
 
-# Encryption Config
-ENCRYPTION_KEY="your-encryption-key"
+   To build and start the application using Docker Compose, run the following command:
 
-```
-### 4. Database Setup
-Run migrations to set up the database schema using the following command:
+   ```bash
+   docker-compose up --build
+   ```
 
-```
-python manage.py migrate
-```
+   This will set up all required services (backend, database) and make the application available at `http://localhost:8000`.
 
-### 5. Run the Application
-Start the backend server using Django:
+4. **Access the Application**
 
-```
-python manage.py runserver
-```
-The application will be available at http://localhost:8000.
+   Open your browser and go to `http://localhost:3000` to start using the app.
+
+---
+
+## Screenshots
+
+Add screenshots of the application here to showcase its interface and functionality. For example:
+
+- **Home Page**: ![Home Page](frontend/public/assets/img/image.png)
+---
 
 ## Usage
-### 1. User Authentication
-Users can register and log in using their email and password. Upon successful login, a JWT token is returned for session management. You can create a new user account via the Sign Up endpoint or log in with an existing account using the Login endpoint to receive the JWT token.
 
-### 2. Uploading Files
-Once logged in, users can upload files, which are encrypted using AES-256 before being stored in the database. The file metadata, such as the file name, size, and encryption status, will be stored in the database.
+1. **User Authentication**
+   Users can register and log in using their email and password. Upon successful login, a JWT token is returned for session management.
 
-### 3. Sharing Files
-Users can share uploaded files with other users by specifying access permissions (either "view" or "edit"). These permissions are stored and managed in the database to control user access to shared files.
+2. **Uploading Files**
+   Once logged in, users can upload files, which are encrypted using AES-256 before being stored in the database.
+
+3. **Sharing Files**
+   Users can share uploaded files with others by specifying access permissions (either "view" or "edit").
+
+---
 
 ## Security Considerations
-AES-256 Encryption: All files are encrypted before being uploaded to ensure data privacy.
-JWT Authentication: Secures user sessions by issuing JSON Web Tokens after user authentication.
-HTTPS: Ensures secure communication between the frontend and backend.
-Role-Based Access Control (RBAC): Manages access to files based on user roles and permissions.
-Audit Logs: Tracks user actions for transparency and accountability.
-Deployment
+
+- **AES-256 Encryption**: All files are encrypted before being uploaded to ensure data privacy.
+- **JWT Authentication**: Secures user sessions by issuing JSON Web Tokens after user authentication.
+- **HTTPS**: Ensures secure communication between the frontend and backend.
+- **Role-Based Access Control (RBAC)**: Manages access to files based on user roles and permissions.
+- **Audit Logs**: Tracks user actions for transparency and accountability.
+
+---
+
+## Deployment
+
 To deploy the application to production, you can use Docker and cloud services such as AWS, Heroku, or DigitalOcean. Follow these steps to set up the Docker environment:
 
-### 1. Docker Setup
-Build and run the Docker container with the following commands:
+### Docker Setup
 
-```
-docker build -t secure-file-sharing .
-docker run -p 8000:8000 secure-file-sharing
-```
-The application will be up and running, accessible at http://localhost:8000.
+1. Build and run the Docker container with the following commands:
+
+   ```bash
+   docker build -t secure-file-sharing .
+   docker run -p 8000:8000 secure-file-sharing
+   ```
+
+2. Access the application at `http://localhost:8000`.
+
+---
 
 ## Testing
-Unit Tests: Write tests for individual components such as encryption, authentication, and file upload.
-Integration Tests: Ensure that the entire flow (file upload, sharing, encryption) works as expected.
-Security Tests: Test the system for common vulnerabilities, such as SQL injection and cross-site scripting (XSS).
+
+- **Unit Tests**: Write tests for individual components such as encryption, authentication, and file upload.
+- **Integration Tests**: Ensure that the entire flow (file upload, sharing, encryption) works as expected.
+- **Security Tests**: Test the system for common vulnerabilities, such as SQL injection and cross-site scripting (XSS).
